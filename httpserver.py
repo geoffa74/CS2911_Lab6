@@ -6,8 +6,8 @@
 #:
 #: | Team members (usernames)   |
 #: |:---------------------------|
-#: | Peter Python (pythonp)     |
-#: | Sally Software (softwares) |
+#: | Geoff Appelbaum (appelbaumgl)     |
+#: | Jon Sonderman (sondermanjj) |
 #:
 
 import socket
