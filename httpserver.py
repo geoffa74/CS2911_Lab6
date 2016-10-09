@@ -55,6 +55,7 @@ def http_server_setup(port):
 #       Closes request socket after sending response.
 #       Should include a response header indicating NO persistent connection
 def handle_request(request_socket):
+    status_code = '200 OK'
     request_bytes = b''
     exit_bytes = b''
     next_byte = request_socket.recv(1)
@@ -63,20 +64,17 @@ def handle_request(request_socket):
             exit_bytes += next_byte
         else:
             request_bytes += next_byte
-    (method, parameter, version) = parseRequestLine()
+    (method, parameter, version) = parseRequestLine(request_bytes.encode())
 
-    #stuff
-
-    sendResponce(request_socket)
+    request_socket.send(version + " " + status_code)
 
 
-def parseRequestLine():
+def parseRequestLine(request_line):
+    parts = request_line.split()
+    return (parts[0], parts[1], parts[2])
 
-    pass
 
-def sendResponce(request_socket):
 
-    pass
 
 # ** Do not modify code below this line.  You should add additional helper methods above this line.
 
