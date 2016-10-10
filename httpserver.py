@@ -68,7 +68,7 @@ def handle_request(request_socket):
     timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
     request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
     request_socket.send(b'Connection: close\r\n')
-    request_socket.send(b"Content-Type: " + str(get_mime_type(file)).encode() + b"\r\n")
+    request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
     request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
 
 def read_header(request_socket):
