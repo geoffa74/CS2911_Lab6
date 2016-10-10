@@ -56,21 +56,32 @@ def http_server_setup(port):
 #       Should include a response header indicating NO persistent connection
 def handle_request(request_socket):
     status_code = '200 OK'
-    request_bytes = b''
-    exit_bytes = b''
-    next_byte = request_socket.recv(1)
-    while(exit_bytes != b'\r\n'):
-        if next_byte == b'\r' or next_byte == b'\n':
-            exit_bytes += next_byte
-        else:
-            request_bytes += next_byte
-    (method, parameter, version) = parseRequestLine(request_bytes.encode())
+    (method, parameter, version) = read_request(request_socket)
+    header = read_header()
+    while(header != '\r\n'):
+        print(header)
+        header = read_header(request_socket)
 
     request_socket.send(version + " " + status_code)
 
+def read_header(request_socket):
+    next_byte = request_socket.recv(1)
+    header_bytes = b''
+    while (next_byte != b'\n'):
+        if next_byte != b'\r' or next_byte != b'\n':
+            header_bytes += next_byte
+        next_byte = request_socket.recv(1)
+    return header_bytes.encode()
 
-def parseRequestLine(request_line):
-    parts = request_line.split()
+def read_request(request_socket):
+    request_bytes = b''
+    next_byte = request_socket.recv(1)
+    while (next_byte != b'\n'):
+        if next_byte != b'\r' or next_byte != b'\n':
+            request_bytes += next_byte
+        next_byte = request_socket.recv(1)
+    request = request_bytes.encode()
+    parts = request.split()
     return (parts[0], parts[1], parts[2])
 
 
