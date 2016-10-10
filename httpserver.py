@@ -57,7 +57,11 @@ def http_server_setup(port):
 def handle_request(request_socket):
     dict = {}
     (method, file, version) = read_request(request_socket)
-    file = file[1:]
+    print(file)
+    if file == '/':
+        file = 'index.html'
+    else:
+        file = file[1:]
     header = read_header(request_socket)
     while(header != b'\r\n'):
         parse_header(header.decode(), dict)
