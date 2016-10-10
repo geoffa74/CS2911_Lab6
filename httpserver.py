@@ -79,6 +79,7 @@ def handle_request(request_socket):
         request_socket.send(next_byte)
         i += 1
     output_file.close()
+    request_socket.close()
 
 def read_header(request_socket):
     header_bytes = b''
