@@ -71,6 +71,15 @@ def handle_request(request_socket):
     request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
     request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
 
+    output_file = open(file, 'rb')
+    i = 0
+    size = get_file_size(file)
+    while i < size:
+        next_byte = output_file.read(1)
+        request_socket.send(next_byte)
+        i += 1
+    output_file.close()
+
 def read_header(request_socket):
     header_bytes = b''
     next_byte = b''
