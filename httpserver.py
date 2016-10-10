@@ -56,22 +56,28 @@ def http_server_setup(port):
 #       Should include a response header indicating NO persistent connection
 def handle_request(request_socket):
     status_code = '200 OK'
-    (method, parameter, version) = read_request(request_socket)
+    (method, file, version) = read_request(request_socket)
+    file = file[1:]
     header = read_header(request_socket)
-    while(header != '\r\n'):
-        print(header)
+    while(header != b'\r\n'):
+        print(header.decode())
         header = read_header(request_socket)
 
-    request_socket.send(version + " " + status_code)
+    request_socket.send(version.encode() + b' ' + status_code.encode() + b'\r\n')
+    timestamp = datetime.datetime.utcnow()
+    timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
+    request_socket.send(b'Connection: close\r\n')
+    request_socket.send(b"Content-Type: " + str(get_mime_type(file)).encode() + b"\r\n")
+    request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
 
 def read_header(request_socket):
-    next_byte = request_socket.recv(1)
     header_bytes = b''
-    while (next_byte != b'\n'):
-        if next_byte != b'\r' or next_byte != b'\n':
-            header_bytes += next_byte
+    next_byte = b''
+    while next_byte != b'\n':
         next_byte = request_socket.recv(1)
-    return header_bytes.decode()
+        header_bytes += next_byte
+    return header_bytes
 
 def read_request(request_socket):
     request_bytes = b''
@@ -82,6 +88,7 @@ def read_request(request_socket):
         next_byte = request_socket.recv(1)
     request = request_bytes.decode()
     parts = request.split()
+    print(request)
     return (parts[0], parts[1], parts[2])
 
 
