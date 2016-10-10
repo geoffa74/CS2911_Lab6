@@ -57,7 +57,7 @@ def http_server_setup(port):
 def handle_request(request_socket):
     status_code = '200 OK'
     (method, parameter, version) = read_request(request_socket)
-    header = read_header()
+    header = read_header(request_socket)
     while(header != '\r\n'):
         print(header)
         header = read_header(request_socket)
@@ -71,7 +71,7 @@ def read_header(request_socket):
         if next_byte != b'\r' or next_byte != b'\n':
             header_bytes += next_byte
         next_byte = request_socket.recv(1)
-    return header_bytes.encode()
+    return header_bytes.decode()
 
 def read_request(request_socket):
     request_bytes = b''
@@ -80,7 +80,7 @@ def read_request(request_socket):
         if next_byte != b'\r' or next_byte != b'\n':
             request_bytes += next_byte
         next_byte = request_socket.recv(1)
-    request = request_bytes.encode()
+    request = request_bytes.decode()
     parts = request.split()
     return (parts[0], parts[1], parts[2])
 
