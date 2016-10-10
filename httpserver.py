@@ -55,31 +55,40 @@ def http_server_setup(port):
 #       Closes request socket after sending response.
 #       Should include a response header indicating NO persistent connection
 def handle_request(request_socket):
-    status_code = '200 OK'
+    dict = {}
     (method, file, version) = read_request(request_socket)
     file = file[1:]
     header = read_header(request_socket)
     while(header != b'\r\n'):
-        print(header.decode())
+        parse_header(header.decode(), dict)
         header = read_header(request_socket)
+    if(os.path.isfile(file)):
+        request_socket.send(version.encode() + b' 200 OK\r\n')
+        timestamp = datetime.datetime.utcnow()
+        timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
+        request_socket.send(b'Connection: close\r\n')
+        request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
+        request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
+        request_socket.send(b'\r\n')
 
-    request_socket.send(version.encode() + b' ' + status_code.encode() + b'\r\n')
-    timestamp = datetime.datetime.utcnow()
-    timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
-    request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
-    request_socket.send(b'Connection: close\r\n')
-    request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
-    request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
-
-    output_file = open(file, 'rb')
-    i = 0
-    size = get_file_size(file)
-    while i < size:
-        next_byte = output_file.read(1)
-        request_socket.send(next_byte)
-        i += 1
-    output_file.close()
+        output_file = open(file, 'rb')
+        i = 0
+        size = get_file_size(file)
+        while i < size:
+            next_byte = output_file.read(1)
+            request_socket.send(next_byte)
+            i += 1
+        output_file.close()
+    else:
+        request_socket.send(version.encode() + b' 404 Not Found\r\n')
     request_socket.close()
+
+def parse_header(header, dict):
+    header = header[:len(header)-2]
+    print(header)
+    parts = header.split(':')
+    dict[parts[0]] = parts[1].lstrip()
 
 def read_header(request_socket):
     header_bytes = b''
