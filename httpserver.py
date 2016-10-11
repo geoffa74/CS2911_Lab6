@@ -55,7 +55,12 @@ def http_server_setup(port):
 #       Closes request socket after sending response.
 #       Should include a response header indicating NO persistent connection
 def handle_request(request_socket):
-    pass  # Replace this line with your code
+
+    request = read_http_headers(request_socket)
+    status = request[0].split()[1]
+    print(status)
+    request_socket.close()
+    return  # Replace this line with your code
 
 
 # ** Do not modify code below this line.  You should add additional helper methods above this line.
@@ -85,6 +90,50 @@ def get_file_size(file_path):
     if os.path.isfile(file_path):
         file_size = os.stat(file_path).st_size
     return file_size
+
+# Reads the headers of the response.
+#       data_socket -- The socket for which the response containing the header information is contained.
+#
+# Returns a list of all the Headers
+#@author: appelbaumgl
+def read_http_headers(data_socket):
+    headers = []
+    header = ""
+    trigger = 0
+    while header != b'\r\n':
+        header = read_http_line(data_socket)
+        headers.append(header.decode("utf-8", "replace"))
+    return headers
+
+# Reads a single line of a http header
+#       data_socket -- The socket for which the responce containing the header information is contained.
+#
+# Returns the line read that contains a http header.
+#@author sondermanjj
+def read_http_line(data_socket):
+    b = b''
+    line = b''
+    while b != b'\n':
+        b = next_byte(data_socket)
+        line += b
+    return line
+
+# Used to skip over bytes by reading them and doing nothing with them.
+#       number -- The number of bytes to skip.
+#       data_socket -- Socket where data is read from.
+#@author: appelbaumgl
+def skip_byte(number, data_socket):
+    for x in range(0, number):
+        next_byte(data_socket)
+    return
+
+# Read the next byte from the socket data_socket.
+#       data_socket -- Socket where data is read from.
+#
+# Returns the next byte, as a bytes object with a single byte in it.
+#@author: appelbaumgl
+def next_byte(data_socket):
+    return data_socket.recv(1)
 
 
 main()
