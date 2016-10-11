@@ -21,7 +21,6 @@ import datetime
 def main():
     http_server_setup(8080)
 
-
 # Start the HTTP server
 #   Open the listening socket
 #   Accept connections and spawn processes to handle requests
@@ -32,6 +31,8 @@ def http_server_setup(port):
     listen_address = ('', port)
     server_socket.bind(listen_address)
     server_socket.listen(num_connections)
+
+    print('Server listening on port: 8080')
     try:
         while True:
             request_socket, request_address = server_socket.accept()
@@ -48,7 +49,6 @@ def http_server_setup(port):
         print('threads: ', threading.enumerate())
         server_socket.close()
 
-
 # Handle a single HTTP request, running on a newly started thread.
 #   request_socket -- socket representing TCP connection from the HTTP client_socket
 #   Returns: nothing
@@ -57,39 +57,14 @@ def http_server_setup(port):
 def handle_request(request_socket):
 
     request = read_http_headers(request_socket)
-    status = request[0].split()[1]
-    print(status)
+    type = request[0].split()[0]
+    if (type == 'GET'):
+        file_path = request[0].split()[1]
+        print('GET REQUEST')
+        print(get_file_size(file_path))
+        print(get_mime_type(file_path))
     request_socket.close()
     return  # Replace this line with your code
-
-
-# ** Do not modify code below this line.  You should add additional helper methods above this line.
-
-# Utility functions
-# You may use these functions to simplify your code.
-
-# Try to guess the MIME type of a file (resource), given its path (primarily its file extension)
-#   file_path -- string containing path to (resource) file, such as './abc.html'
-#   Returns:
-#       If successful in guessing the MIME type, a string representing the content type, such as 'text/html'
-#       Otherwise, None
-def get_mime_type(file_path):
-    mime_type_and_encoding = mimetypes.guess_type(file_path)
-    mime_type = mime_type_and_encoding[0]
-    return mime_type
-
-
-# Try to get the size of a file (resource) as number of bytes, given its path
-#   file_path -- string containing path to (resource) file, such as './abc.html'
-#   Returns:
-#       If file_path designates a normal file, an integer value representing the the file size in bytes
-#       Otherwise (no such file, or path is not a file), None
-def get_file_size(file_path):
-    # Initially, assume file does not exist
-    file_size = None
-    if os.path.isfile(file_path):
-        file_size = os.stat(file_path).st_size
-    return file_size
 
 # Reads the headers of the response.
 #       data_socket -- The socket for which the response containing the header information is contained.
@@ -103,6 +78,8 @@ def read_http_headers(data_socket):
     while header != b'\r\n':
         header = read_http_line(data_socket)
         headers.append(header.decode("utf-8", "replace"))
+
+    print(headers) #DEBUG CODE
     return headers
 
 # Reads a single line of a http header
@@ -135,7 +112,33 @@ def skip_byte(number, data_socket):
 def next_byte(data_socket):
     return data_socket.recv(1)
 
+# ** Do not modify code below this line.  You should add additional helper methods above this line.
 
+# Utility functions
+# You may use these functions to simplify your code.
+
+# Try to guess the MIME type of a file (resource), given its path (primarily its file extension)
+#   file_path -- string containing path to (resource) file, such as './abc.html'
+#   Returns:
+#       If successful in guessing the MIME type, a string representing the content type, such as 'text/html'
+#       Otherwise, None
+def get_mime_type(file_path):
+    mime_type_and_encoding = mimetypes.guess_type(file_path)
+    mime_type = mime_type_and_encoding[0]
+    return mime_type
+
+
+# Try to get the size of a file (resource) as number of bytes, given its path
+#   file_path -- string containing path to (resource) file, such as './abc.html'
+#   Returns:
+#       If file_path designates a normal file, an integer value representing the the file size in bytes
+#       Otherwise (no such file, or path is not a file), None
+def get_file_size(file_path):
+    # Initially, assume file does not exist
+    file_size = None
+    if os.path.isfile(file_path):
+        file_size = os.stat(file_path).st_size
+    return file_size
 main()
 
 # Replace this line with your comments on the lab
