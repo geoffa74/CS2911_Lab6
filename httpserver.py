@@ -17,10 +17,8 @@ import os
 import mimetypes
 import datetime
 
-
 def main():
     http_server_setup(8080)
-
 
 # Start the HTTP server
 #   Open the listening socket
@@ -69,10 +67,10 @@ def handle_request(request_socket):
     if os.path.isfile(file) and version == "HTTP/1.1" and method == "GET":
         reply(request_socket, version, file)
     elif not os.path.isfile(file):
-        request_socket.send(version.encode() + b' 404 Not-Found\r\n\r\n')
+        request_socket.send(version.encode() + b' 404 Not Found\r\n\r\n')
         print("File not found")
     elif version != "HTTP/1.1":
-        request_socket.send(version.encode() + b' 505 Version-Not-Supported\r\n\r\n')
+        request_socket.send(version.encode() + b' 505 Version Not Supported\r\n\r\n')
         print("Wrong-Version")
     else:
         request_socket.send(version.encode() + b' 400 Bad-Request\r\n\r\n')
@@ -87,14 +85,7 @@ def handle_request(request_socket):
 #   file: File name
 #   Returns: nothing
 def reply(request_socket, version, file):
-    request_socket.send(version.encode() + b' 200 OK\r\n')
-    response = create_response(file)
-
-    for header in response:
-        head = str.encode(header + ": " + response[header])
-        request_socket.send(head)
-    request_socket.send(b'\r\n')
-
+    send_response_head(request_socket, version, file)
     output_file = open(file, 'rb')
     i = 0
     size = get_file_size(file)
@@ -103,6 +94,20 @@ def reply(request_socket, version, file):
         i += 1
     output_file.close()
 
+# Reply to the client, sending the header information
+#   request_socket: The socket we're getting data from, and that we'll respond to
+#   version: The version of the code we're using
+#   file: File name
+#   Returns: nothing
+def send_response_head(request_socket, version, file):
+    request_socket.send(version.encode() + b' 200 OK\r\n')
+    response = create_response(file)
+
+    for header in response:
+        head = str.encode(header + ": " + response[header])
+        request_socket.send(head)
+    request_socket.send(b'\r\n')
+    return
 
 # creates the response headers, getting them ready to be sent
 #   file: File name
