@@ -98,7 +98,6 @@ def reply(request_socket, version, file):
 #   dict - dictionary reference that we are changing
 #   Returns: nothing
 def parse_header(header, dict):
-    header = header[:len(header)-2]
     print(header)
     parts = header.split(':')
     dict[parts[0]] = parts[1].lstrip()
@@ -124,13 +123,12 @@ def read_header(request_socket):
 def read_request(request_socket):
     request_bytes = b''
     exit_bytes = b''
-    next_byte = request_socket.recv(1)
     while exit_bytes != b'\r\n':
+        next_byte = request_socket.recv(1)
         if next_byte == b'\r' or next_byte == b'\n':
             exit_bytes += next_byte
         else:
             request_bytes += next_byte
-        next_byte = request_socket.recv(1)
     request = request_bytes.decode()
     parts = request.split()
     print(request)
@@ -164,7 +162,6 @@ def get_file_size(file_path):
     if os.path.isfile(file_path):
         file_size = os.stat(file_path).st_size
     return file_size
-
 
 main()
 
