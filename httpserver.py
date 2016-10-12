@@ -63,7 +63,7 @@ def handle_request(request_socket):
     else:
         file = file[1:]
     header = read_header(request_socket)
-    while(header != b'\r\n'):
+    while(header != b''):
         parse_header(header.decode(), dict)
         header = read_header(request_socket)
     if(os.path.isfile(file)):
@@ -97,16 +97,23 @@ def parse_header(header, dict):
 def read_header(request_socket):
     header_bytes = b''
     next_byte = b''
-    while next_byte != b'\n':
+    exit_bytes = b''
+    while exit_bytes != b'\r\n':
         next_byte = request_socket.recv(1)
-        header_bytes += next_byte
+        if next_byte == b'\r' or next_byte == b'\n':
+            exit_bytes += next_byte
+        else:
+            header_bytes += next_byte
     return header_bytes
 
 def read_request(request_socket):
     request_bytes = b''
+    exit_bytes = b''
     next_byte = request_socket.recv(1)
-    while (next_byte != b'\n'):
-        if next_byte != b'\r' or next_byte != b'\n':
+    while exit_bytes != b'\r\n':
+        if next_byte == b'\r' or next_byte == b'\n':
+            exit_bytes += next_byte
+        else:
             request_bytes += next_byte
         next_byte = request_socket.recv(1)
     request = request_bytes.decode()
