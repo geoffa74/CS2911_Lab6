@@ -17,10 +17,8 @@ import os
 import mimetypes
 import datetime
 
-
 def main():
     http_server_setup(8080)
-
 
 # Start the HTTP server
 #   Open the listening socket
@@ -48,7 +46,6 @@ def http_server_setup(port):
         print('threads: ', threading.enumerate())
         server_socket.close()
 
-
 # Handle a single HTTP request, running on a newly started thread.
 #   request_socket -- socket representing TCP connection from the HTTP client_socket
 #   Returns: nothing
@@ -67,26 +64,34 @@ def handle_request(request_socket):
         parse_header(header.decode(), dict)
         header = read_header(request_socket)
     if(os.path.isfile(file)):
-        request_socket.send(version.encode() + b' 200 OK\r\n')
-        timestamp = datetime.datetime.utcnow()
-        timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
-        request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
-        request_socket.send(b'Connection: close\r\n')
-        request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
-        request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
-        request_socket.send(b'\r\n')
-
-        output_file = open(file, 'rb')
-        i = 0
-        size = get_file_size(file)
-        while i < size:
-            next_byte = output_file.read(1)
-            request_socket.send(next_byte)
-            i += 1
-        output_file.close()
+        reply(request_socket,version,file)
     else:
         request_socket.send(version.encode() + b' 404 Not Found\r\n')
     request_socket.close()
+
+# Reply to the client, sending the header information
+#   request_socket: The socket we're getting data from, and that we'll respond to
+#   version: The version of the code we're using
+#   file: File name
+#   Returns: nothing
+def reply(request_socket, version, file):
+    request_socket.send(version.encode() + b' 200 OK\r\n')
+    timestamp = datetime.datetime.utcnow()
+    timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    request_socket.send(b'Date: ' + timestring.encode() + b'\r\n')
+    request_socket.send(b'Connection: close\r\n')
+    request_socket.send(b"Content-Type: " + get_mime_type(file).encode() + b"\r\n")
+    request_socket.send(b"Content-Length: " + str(get_file_size(file)).encode() + b"\r\n")
+    request_socket.send(b'\r\n')
+
+    output_file = open(file, 'rb')
+    i = 0
+    size = get_file_size(file)
+    while i < size:
+        next_byte = output_file.read(1)
+        request_socket.send(next_byte)
+        i += 1
+    output_file.close()
 
 # Parse a single header, adding it to the dictionary
 #   header - Header to be added to the dictionary
