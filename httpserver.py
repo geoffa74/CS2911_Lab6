@@ -88,12 +88,19 @@ def handle_request(request_socket):
         request_socket.send(version.encode() + b' 404 Not Found\r\n')
     request_socket.close()
 
+# Parse a single header, adding it to the dictionary
+#   header - Header to be added to the dictionary
+#   dict - dictionary reference that we are changing
+#   Returns: nothing
 def parse_header(header, dict):
     header = header[:len(header)-2]
     print(header)
     parts = header.split(':')
     dict[parts[0]] = parts[1].lstrip()
 
+# Reads a single header
+#   request_socket: socket that we are getting the information from
+#   Returns: The header in byte form
 def read_header(request_socket):
     header_bytes = b''
     next_byte = b''
@@ -106,6 +113,9 @@ def read_header(request_socket):
             header_bytes += next_byte
     return header_bytes
 
+# Reads the first line of the request
+#   request_socket: socket that we are getting the information from
+#   Returns: The request line in all its parts
 def read_request(request_socket):
     request_bytes = b''
     exit_bytes = b''
@@ -120,8 +130,6 @@ def read_request(request_socket):
     parts = request.split()
     print(request)
     return (parts[0], parts[1], parts[2])
-
-
 
 
 # ** Do not modify code below this line.  You should add additional helper methods above this line.
