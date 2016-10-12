@@ -58,11 +58,36 @@ def handle_request(request_socket):
 
     request = read_http_headers(request_socket)
     type = request[0].split()[0]
+    response = {}
     if (type == 'GET'):
         file_path = request[0].split()[1]
         print('GET REQUEST')
-        print(get_file_size(file_path))
-        print(get_mime_type(file_path))
+        length = get_file_size(file_path)
+        type = get_mime_type(file_path)
+        if (length!= None and type != None):
+            print("File Found.")
+            timestamp = datetime.datetime.utcnow()
+            timestring = timestamp.strftime('%a, %d %b %Y %H:%M:%S GMT')
+
+            response["Date"] = timestring + "\r\n"
+            response["Connection"] = 'close\r\n'
+            response["Content-Type"] = type + '\r\n'
+            response["Content-Length"] = str(length) + '\r\n'
+
+            file_path = file_path[1:]
+            in_file = open(file_path, "rb")  # opening for [r]eading as [b]inary
+            data = in_file.read(length)  # if you only wanted to read 512 bytes, do .read(512)
+
+            for header in response:
+                head = str.encode(header+": "+ response[header])
+                request_socket.sendall(head)
+            request_socket.sendall(b'\r\n')
+            request_socket.sendall(data)
+            print("File sent successfully")
+        else:
+            print("File not found.")
+            request_socket.sendall(b'HTTP/1.1 404 OK\r\n\r\n')
+
     request_socket.close()
     return  # Replace this line with your code
 
@@ -136,6 +161,7 @@ def get_mime_type(file_path):
 def get_file_size(file_path):
     # Initially, assume file does not exist
     file_size = None
+    file_path = "." + file_path
     if os.path.isfile(file_path):
         file_size = os.stat(file_path).st_size
     return file_size
